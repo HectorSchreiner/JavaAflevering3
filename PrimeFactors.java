@@ -15,14 +15,8 @@ public class PrimeFactors {
     private static final long MAX_PRIME_SMALL_LIST = 104729L;
            
     public static void main(String[] args) throws IOException {
-        Optional<List<Long>> PrimeList = getLookupTable();
+        Optional<List<Long>> primeList = getLookupTable();
 
-        if (PrimeList.isEmpty()) {
-            System.err.println("FATAL: Could not load the prime number lookup table. Exiting.");
-            return;
-        }
-
-        List<Long> primeSmallList = PrimeList.get();
         Cache cache = new Cache();
         Scanner scanner = new Scanner(System.in);
 
@@ -46,7 +40,7 @@ public class PrimeFactors {
                 continue;
             }
 
-            final PrimeFactorResult primeFactors = trialDivisionWithList(number, primeSmallList, cache);
+            final PrimeFactorResult primeFactors = trialDivisionWithList(number, primeList, cache);
             System.out.println(primeFactors);
         }
 
@@ -54,17 +48,22 @@ public class PrimeFactors {
         scanner.close();
     }
 
-    public static PrimeFactorResult trialDivisionWithList(long input, List<Long> primeSmallList, Cache cache) {
-
+    public static PrimeFactorResult trialDivisionWithList(long input, Optional<List<Long>> primeSmallList, Cache cache) {
         Optional<PrimeFactorResult> cacheOutput = cache.checkCache(input);
+        PrimeFactorResult outputPrimeFactor = new PrimeFactorResult(input, new ArrayList<>());
+
+        if (primeSmallList.isEmpty()) {
+            findRemainingFactors(input, outputPrimeFactor, 2L);
+            cache.push(outputPrimeFactor);
+
+            return outputPrimeFactor;
+        }
 
         if (cacheOutput.isPresent()) {
             return cacheOutput.get();
         }
 
-        PrimeFactorResult outputPrimeFactor = new PrimeFactorResult(input, new ArrayList<>());
-
-        for (Long prime : primeSmallList) {
+        for (Long prime : primeSmallList.get()) {
             while (input % prime == 0) {
                 outputPrimeFactor.addPrimeFactor(prime);
                 input /= prime;
@@ -72,7 +71,7 @@ public class PrimeFactors {
         }
         
         if (input > 1) {
-            findRemainingFactors(input, outputPrimeFactor);
+            findRemainingFactors(input, outputPrimeFactor, MAX_PRIME_SMALL_LIST);
         }
 
         cache.push(outputPrimeFactor);
@@ -80,34 +79,18 @@ public class PrimeFactors {
         return outputPrimeFactor;
     }
 
-    private static void findRemainingFactors(Long input, PrimeFactorResult result) {
-    long start = MAX_PRIME_SMALL_LIST;
-    if (start % 2 == 0) start++;
+    private static void findRemainingFactors(Long input, PrimeFactorResult result, Long start) {
+        if (start % 2 == 0) start++;
 
-    for (long i = start; i * i <= input; i += 2) {
-        while (input % i == 0) {
-            result.addPrimeFactor(i);
-            input /= i;
+        for (long i = start; i * i <= input; i += 2) {
+            while (input % i == 0) {
+                result.addPrimeFactor(i);
+                input /= i;
+            }
         }
-    }
 
-    if (input > 1) {
-        result.addPrimeFactor(input);
-    }
-}
-
-    // This method gets the user input, and returns the input as an optional Long
-    private static Optional<Long> getInput(Scanner scanner) {
-        System.out.print("Enter integer greater than 1 (0 to terminate): ");
-        
-        if (scanner.hasNextLong()) {
-            Long input = scanner.nextLong();
-            return Optional.of(input);
-
-        } else {
-            scanner.next(); // used to remove the bad user input
-            System.out.println("Invalid input");
-            return Optional.empty();
+        if (input > 1) {
+            result.addPrimeFactor(input);
         }
     }
 
@@ -121,9 +104,9 @@ public class PrimeFactors {
                 .toString()
                 .trim()
                 .split("\\s+"))
-                .stream()
-                .map(s -> Long.parseLong(s))
-                .collect(Collectors.toList());
+            .stream()
+            .map(s -> Long.parseLong(s))
+            .collect(Collectors.toList());
 
             return Optional.of(primeList);
         } catch (Exception e) {

@@ -16,7 +16,7 @@ import java.util.Scanner;
 import java.util.stream.Collectors;
 
 public class PrimeFactors {
-    // højeste primtal i listen.
+    // Highest prime in the LUT
     private static final long MAX_PRIME_SMALL_LIST = 104729L;
         
     // main method to handle the programs loop. 

@@ -1,4 +1,3 @@
-package JavaAflevering3;
 /*
  * 
  */
@@ -148,7 +147,7 @@ public class PrimeFactors {
 
 // this is a cache to hold the results, this makes looking up the same number a lot faster.
 // the cache is just an object that holds a hashmap, with two methods to push and check the cache.
-public class Cache {
+class Cache {
     private HashMap<Long, PrimeFactorResult> primeFactorResultMap;
 
     public Cache() {
@@ -166,7 +165,7 @@ public class Cache {
 
 // Primefactorresult is an object that consists of a number, and its prime factors.
 // The class consists mainly of getters to easily access the data.
-public class PrimeFactorResult {
+class PrimeFactorResult {
     private final Long number;
     private final List<Long> primeFactorList;
 
